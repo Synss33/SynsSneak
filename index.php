@@ -368,7 +368,7 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
 
             <div class="contact-form-wrap reveal-right">
               <div class="contact-form-card">
-                <h3>Kirim Pesan / Request Pre-Order</h3>
+                <h3>Kirim Pesan</h3>
                 <?php if (isset($_SESSION['flash_contact'])) : ?>
                 <div class="flash-msg" style="margin-bottom:16px;"><?php echo $_SESSION['flash_contact']; unset($_SESSION['flash_contact']); ?></div>
                 <?php endif; ?>
