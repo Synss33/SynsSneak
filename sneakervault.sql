@@ -1,6 +1,3 @@
--- --------------------------------------------------------
--- Database: sneakervault
-------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS users (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
@@ -9,13 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL DEFAULT 'admin'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Password default: admin123 (bcrypt hash)
 INSERT IGNORE INTO users (username, password, role) VALUES ('admin', '$2y$12$0uQHrF5KrJxvpzJ7d/Jdo.R1GVH07ig78ZBL.2JxHb2yQhkZUsoU2', 'admin');
 
--- --------------------------------------------------------
--- Database: sneakervault
--- Tabel: orders (Pemesanan Pelanggan)
--- --------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS orders (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
@@ -40,11 +32,6 @@ INSERT INTO orders (product_name, customer_name, customer_email, customer_phone,
 ('Vans Old Skool', 'Maya Sari', 'maya@email.com', '085722334455', 'Jl. Kusuma Bangsa No. 30, Semarang', '38', 2, 1700000, 'completed', '2026-06-20 08:00:00'),
 ('Nike Dunk Low Retro', 'Dimas Pratama', 'dimas@email.com', '081267890123', 'Jl. Thamrin No. 55, Jakarta Pusat', '44', 1, 2100000, 'pending', '2026-07-10 13:50:00');
 
--- --------------------------------------------------------
--- Database: sneakervault
--- Tabel: messages (Pesan dari Form Kontak)
--- --------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS messages (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -60,10 +47,6 @@ INSERT INTO messages (name, email, message, created_at) VALUES
 ('Hendra Gunawan', 'hendra@email.com', 'Permisi, saya mau order pre-order untuk Nike Dunk Low Retro ukuran 43. Berapa lama estimasi barang datang? Siap transfer DP.', '2026-07-09 11:45:00'),
 ('Rina Marlina', 'rina@email.com', 'Halo tim SneakerVault, saya dari Makassar. Apakah ada layanan pengiriman gratis ke Sulawesi? Saya minat beli 2 pasang Vans Old Skool.', '2026-07-11 08:20:00');
 
--- --------------------------------------------------------
--- Database: sneakervault
--- Tabel: produk (Manajemen Koleksi Sepatu)
--- --------------------------------------------------------
 
 CREATE DATABASE IF NOT EXISTS sneakervault;
 USE sneakervault;
@@ -79,7 +62,6 @@ CREATE TABLE IF NOT EXISTS produk (
     gambar VARCHAR(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Contoh data awal
 INSERT INTO produk (nama_sepatu, brand, kategori, harga, stok_status, deskripsi, gambar) VALUES
 ('Nike Air Max Tailwind', 'Nike', 'Running & Sport', 1850000, 'Stok Tersedia', 'Maksimalkan performa lari harian Anda dengan dukungan bantalan udara responsif.', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=640'),
 ('Air Jordan 1 Retro', 'Jordan', 'Limited Edition / Hype', 3750000, 'Sisa 3 Pasang', 'Siluet potongan tinggi kultur streetwear ikonik dengan material kulit orisinal premium.', 'https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=640'),
