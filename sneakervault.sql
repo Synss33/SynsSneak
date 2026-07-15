@@ -45,7 +45,25 @@ INSERT INTO messages (name, email, message, created_at) VALUES
 ('Andi Wijaya', 'andi@email.com', 'Halo, saya ingin menanyakan apakah ukuran 45 untuk New Balance 574 tersedia? Mohon informasinya. Terima kasih.', '2026-07-02 09:15:00'),
 ('Fitria Handayani', 'fitria@email.com', 'Selamat siang, saya tertarik dengan Air Jordan 1 Retro. Apakah masih ada stok untuk ukuran 42? Saya juga ingin tahu estimasi pengiriman ke Bali.', '2026-07-06 14:30:00'),
 ('Hendra Gunawan', 'hendra@email.com', 'Permisi, saya mau order pre-order untuk Nike Dunk Low Retro ukuran 43. Berapa lama estimasi barang datang? Siap transfer DP.', '2026-07-09 11:45:00'),
-('Rina Marlina', 'rina@email.com', 'Halo tim SneakerVault, saya dari Makassar. Apakah ada layanan pengiriman gratis ke Sulawesi? Saya minat beli 2 pasang Vans Old Skool.', '2026-07-11 08:20:00');
+('Rina Marlina', 'rina@email.com', 'Halo tim SynsSneak, saya dari Makassar. Apakah ada layanan pengiriman gratis ke Sulawesi? Saya minat beli 2 pasang Vans Old Skool.', '2026-07-11 08:20:00');
+
+CREATE TABLE IF NOT EXISTS preorders (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(255) NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(100) NOT NULL,
+    notes TEXT,
+    status ENUM('pending','contacted','completed','cancelled') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO preorders (product_name, customer_name, customer_email, customer_phone, notes, status, created_at) VALUES
+('Nike Air Force 1 \'07', 'Dimas Pratama', 'dimas@email.com', '081234567890', 'Ukuran 43, warna putih', 'pending', '2026-07-12 09:15:00'),
+('Adidas Samba OG', 'Sasa Amalia', 'sasa@email.com', '087812345678', 'Ukuran 39, warna hitam, kapan ready?', 'contacted', '2026-07-13 14:30:00'),
+('New Balance 990v6', 'Bayu Setiawan', 'bayu@email.com', '085611223344', 'Ukuran 42, color navy', 'pending', '2026-07-14 11:00:00'),
+('Hoka Clifton 9', 'Rina Wijaya', 'rina@email.com', '082134567890', 'Ukuran 40, untuk lari. Estimasi harga?', 'pending', '2026-07-14 16:45:00'),
+('Converse Run Star Motion', 'Fajar Hidayat', 'fajar@email.com', '081398765432', 'Ukuran 41, warna cream. Minta notifikasi stok', 'completed', '2026-07-11 08:20:00');
 
 
 CREATE DATABASE IF NOT EXISTS sneakervault;

@@ -189,6 +189,8 @@ h3 { font-size: 1.35rem; }
   font-weight: 700;
   padding: 10px 24px;
   border-radius: 100px;
+  border: none;
+  cursor: pointer;
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1), background 0.35s cubic-bezier(0.4,0,0.2,1);
 }
 .nav-cta:hover {
@@ -1097,6 +1099,39 @@ h3 { font-size: 1.35rem; }
 .status-confirmed { background: #dbeafe; color: #1e40af; }
 .status-completed { background: #d1fae5; color: #065f46; }
 .status-cancelled { background: #fee2e2; color: #991b1b; }
+.status-contacted { background: #e0e7ff; color: #3730a3; }
+
+.status-select {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+}
+.status-select.status-pending { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+.status-select.status-confirmed { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
+.status-select.status-completed { background: #d1fae5; color: #065f46; border-color: #10b981; }
+.status-select.status-cancelled { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
+.status-select.status-contacted { background: #e0e7ff; color: #3730a3; border-color: #6366f1; }
+
+.btn-status-save {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+.btn-status-save:hover { background: #1d4ed8; }
 
 @media (max-width: 1023px) {
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 20px; }

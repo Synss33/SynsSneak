@@ -38,6 +38,24 @@ if (isset($_POST['submit_contact'])) {
     exit;
 }
 
+if (isset($_POST['submit_preorder'])) {
+    $pr_product  = mysqli_real_escape_string($koneksi, $_POST['product_name']);
+    $pr_name     = mysqli_real_escape_string($koneksi, $_POST['customer_name']);
+    $pr_email    = mysqli_real_escape_string($koneksi, $_POST['customer_email']);
+    $pr_phone    = mysqli_real_escape_string($koneksi, $_POST['customer_phone']);
+    $pr_notes    = mysqli_real_escape_string($koneksi, $_POST['notes']);
+
+    $q = "INSERT INTO preorders (product_name, customer_name, customer_email, customer_phone, notes)
+          VALUES ('$pr_product','$pr_name','$pr_email','$pr_phone','$pr_notes')";
+    if (mysqli_query($koneksi, $q)) {
+        $_SESSION['flash_order'] = 'Pre-order berhasil dikirim! Tim kami akan menghubungi Anda.';
+    } else {
+        $_SESSION['flash_order'] = 'Gagal mengirim pre-order. Silakan coba lagi.';
+    }
+    header("Location: index.php#products");
+    exit;
+}
+
 if (isset($_POST['submit_tambah'])) {
     $nama_sepatu  = mysqli_real_escape_string($koneksi, $_POST['nama_sepatu']);
     $brand        = mysqli_real_escape_string($koneksi, $_POST['brand']);
@@ -80,6 +98,17 @@ if (isset($_POST['submit_edit'])) {
     exit;
 }
 
+if (isset($_POST['submit_status'])) {
+    $id     = (int)$_POST['id'];
+    $status = mysqli_real_escape_string($koneksi, $_POST['status']);
+    $type   = $_POST['type'];
+    $q = "UPDATE $type SET status='$status' WHERE id=$id";
+    mysqli_query($koneksi, $q);
+    $_SESSION['flash'] = 'Status berhasil diperbarui!';
+    header("Location: index.php#dashboard");
+    exit;
+}
+
 $query = "SELECT * FROM produk ORDER BY id DESC";
 $res = mysqli_query($koneksi, $query) or die(mysqli_error($koneksi));
 
@@ -88,6 +117,9 @@ $ores = mysqli_query($koneksi, $oq);
 
 $mq = "SELECT * FROM messages ORDER BY created_at DESC";
 $mres = mysqli_query($koneksi, $mq);
+
+$pq = "SELECT * FROM preorders ORDER BY created_at DESC";
+$pres = mysqli_query($koneksi, $pq);
 
 $products = [];
 mysqli_data_seek($res, 0);
@@ -119,7 +151,7 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
         <?php endif; ?>
       </ul>
       <div class="nav-actions">
-        <a href="#products" class="nav-cta">Belanja Sekarang</a>
+        <button class="nav-cta" onclick="openOrderModal()">Pre-Order</button>
         <?php if (isset($_SESSION['login']) && $_SESSION['login'] === true) : ?>
         <a href="logout.php" class="nav-btn-auth" style="background:#0f172a;border-color:#0f172a;color:#fff;">Logout</a>
         <?php else : ?>
@@ -367,19 +399,17 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
       <div class="modal-card">
         <button class="modal-close" onclick="closeModal('orderModal')">&times;</button>
         <div class="modal-header">
-          <h3>Pesan Sepatu</h3>
-          <p>Isi data diri Anda untuk memesan produk ini</p>
+          <h3>Pre-Order Sepatu</h3>
+          <p>Isi data diri Anda untuk request pre-order produk yang diinginkan</p>
         </div>
         <?php if (isset($_SESSION['flash_order'])) : ?>
         <div class="flash-msg" style="margin-bottom:16px;"><?php echo $_SESSION['flash_order']; unset($_SESSION['flash_order']); ?></div>
         <?php endif; ?>
         <form action="index.php#products" method="POST" class="modal-form">
-          <input type="hidden" name="product_name" id="modalProductName">
-          <input type="hidden" name="total_price" id="modalTotalPrice">
 
           <div class="modal-field">
-            <label>Produk</label>
-            <input type="text" id="modalProductDisplay" readonly>
+            <label>Nama / Tipe Produk *</label>
+            <input type="text" name="product_name" id="modalProductDisplay" placeholder="Tulis nama sepatu yang diinginkan">
           </div>
           <div class="modal-row">
             <div class="modal-field">
@@ -396,30 +426,12 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
             <input type="email" name="customer_email" required placeholder="nama@email.com">
           </div>
           <div class="modal-field">
-            <label>Alamat Pengiriman *</label>
-            <textarea name="address" rows="2" required placeholder="Jl. ..."></textarea>
-          </div>
-          <div class="modal-row">
-            <div class="modal-field">
-              <label>Ukuran *</label>
-              <select name="size" required>
-                <option value="">Pilih ukuran</option>
-                <option>39</option><option>40</option><option>41</option><option>42</option>
-                <option>43</option><option>44</option><option>45</option>
-              </select>
-            </div>
-            <div class="modal-field">
-              <label>Jumlah *</label>
-              <input type="number" name="quantity" id="modalQuantity" value="1" min="1" required>
-            </div>
-          </div>
-          <div class="modal-total">
-            <span>Total:</span>
-            <strong id="modalTotalDisplay">Rp 0</strong>
+            <label>Catatan (opsional)</label>
+            <textarea name="notes" rows="3" placeholder="Contoh: ukuran 42, warna hitam, dll."></textarea>
           </div>
           <div class="modal-actions">
             <button type="button" class="btn-dash btn-dash-pdf" onclick="closeModal('orderModal')">Batal</button>
-            <button type="submit" name="submit_order" class="btn-dash btn-dash-add">Konfirmasi Pesanan</button>
+            <button type="submit" name="submit_preorder" class="btn-dash btn-dash-add">Kirim Pre-Order</button>
           </div>
         </form>
       </div>
@@ -444,6 +456,7 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
           <div class="dash-tabs">
             <button class="dash-tab active" data-tab="produk">Stok Produk</button>
             <button class="dash-tab" data-tab="orders">Pemesanan</button>
+            <button class="dash-tab" data-tab="preorders">Pre-Order</button>
             <button class="dash-tab" data-tab="messages">Pesan Masuk</button>
           </div>
 
@@ -529,13 +542,79 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
                     <td><?php echo $o['quantity']; ?></td>
                     <td class="dash-price">Rp <?php echo number_format($o['total_price'], 0, ',', '.'); ?></td>
                     <td>
-                      <span class="order-status status-<?php echo $o['status']; ?>"><?php echo ucfirst($o['status']); ?></span>
+                        <form method="POST" style="display:flex;gap:4px;align-items:center;" class="status-form">
+                        <input type="hidden" name="id" value="<?php echo $o['id']; ?>">
+                        <input type="hidden" name="type" value="orders">
+                        <select name="status" class="status-select status-<?php echo $o['status']; ?>">
+                          <option value="pending" <?php if($o['status']=='pending') echo 'selected'; ?>>Pending</option>
+                          <option value="confirmed" <?php if($o['status']=='confirmed') echo 'selected'; ?>>Confirmed</option>
+                          <option value="completed" <?php if($o['status']=='completed') echo 'selected'; ?>>Completed</option>
+                          <option value="cancelled" <?php if($o['status']=='cancelled') echo 'selected'; ?>>Cancelled</option>
+                        </select>
+                        <button type="submit" name="submit_status" class="btn-status-save">Simpan</button>
+                      </form>
                     </td>
                     <td style="font-size:0.78rem;color:#64748b;"><?php echo date('d/m/Y', strtotime($o['created_at'])); ?></td>
                   </tr>
                   <?php endwhile; ?>
                   <?php else : ?>
                   <tr><td colspan="9" style="text-align:center;padding:32px;color:#64748b;">Belum ada pemesanan.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="dash-panel" id="dash-preorders">
+            <div class="dashboard-header">
+              <div>
+                <h2 style="color:#0f172a;font-size:1.5rem;font-weight:700;">Pre-Order Pelanggan</h2>
+                <p style="color:#0f172a;font-size:0.88rem;">Permintaan pre-order produk dari pelanggan.</p>
+              </div>
+            </div>
+            <div class="dash-table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Produk</th>
+                    <th>Pemesan</th>
+                    <th>No. HP</th>
+                    <th>Catatan</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if (mysqli_num_rows($pres) > 0) : ?>
+                  <?php $no=1; while($p = mysqli_fetch_assoc($pres)) : ?>
+                  <tr>
+                    <td><?php echo $no++; ?></td>
+                    <td class="dash-name"><?php echo $p['product_name']; ?></td>
+                    <td>
+                      <strong><?php echo $p['customer_name']; ?></strong><br>
+                      <span style="font-size:0.75rem;color:#64748b;"><?php echo $p['customer_email']; ?></span>
+                    </td>
+                    <td><?php echo $p['customer_phone']; ?></td>
+                    <td style="max-width:200px;font-size:0.82rem;"><?php echo $p['notes']; ?></td>
+                    <td>
+                        <form method="POST" style="display:flex;gap:4px;align-items:center;" class="status-form">
+                        <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
+                        <input type="hidden" name="type" value="preorders">
+                        <select name="status" class="status-select status-<?php echo $p['status']; ?>">
+                          <option value="pending" <?php if($p['status']=='pending') echo 'selected'; ?>>Pending</option>
+                          <option value="contacted" <?php if($p['status']=='contacted') echo 'selected'; ?>>Contacted</option>
+                          <option value="completed" <?php if($p['status']=='completed') echo 'selected'; ?>>Completed</option>
+                          <option value="cancelled" <?php if($p['status']=='cancelled') echo 'selected'; ?>>Cancelled</option>
+                        </select>
+                        <button type="submit" name="submit_status" class="btn-status-save">Simpan</button>
+                      </form>
+                    </td>
+                    <td style="font-size:0.78rem;color:#64748b;"><?php echo date('d/m/Y', strtotime($p['created_at'])); ?></td>
+                  </tr>
+                  <?php endwhile; ?>
+                  <?php else : ?>
+                  <tr><td colspan="7" style="text-align:center;padding:32px;color:#64748b;">Belum ada pre-order.</td></tr>
                   <?php endif; ?>
                 </tbody>
               </table>
@@ -787,21 +866,12 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
       }
 
       var modal = document.getElementById('orderModal');
-      var modalProduct = document.getElementById('modalProductName');
       var modalProductDisplay = document.getElementById('modalProductDisplay');
-      var modalTotal = document.getElementById('modalTotalPrice');
-      var modalTotalDisplay = document.getElementById('modalTotalDisplay');
-      var modalQty = document.getElementById('modalQuantity');
 
       document.querySelectorAll('.btn-beli').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var product = btn.getAttribute('data-product');
-          var price = parseInt(btn.getAttribute('data-price'));
-          modalProduct.value = product;
           modalProductDisplay.value = product;
-          modalTotal.value = price;
-          modalQty.value = 1;
-          updateTotal();
           modal.classList.add('show');
         });
       });
@@ -810,14 +880,33 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
         if (e.target === modal) modal.classList.remove('show');
       });
 
-      function updateTotal() {
-        var qty = parseInt(modalQty.value) || 1;
-        var price = parseInt(modalTotal.value) || 0;
-        var total = qty * price;
-        modalTotal.value = total;
-        modalTotalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
-      }
-      modalQty.addEventListener('input', updateTotal);
+      window.openOrderModal = function() {
+        modalProductDisplay.value = '';
+        modal.classList.add('show');
+      };
+
+      document.querySelectorAll('.status-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var data = new FormData(form);
+          fetch('index.php', { method: 'POST', body: data }).then(function() {
+            var select = form.querySelector('select');
+            select.className = 'status-select status-' + select.value;
+          });
+        });
+      });
+
+      document.querySelectorAll('.modal-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var data = new FormData(form);
+          fetch('index.php', { method: 'POST', body: data }).then(function() {
+            closeModal(form.closest('.modal-overlay').id);
+            var action = form.getAttribute('action') || 'index.php';
+            window.location = action;
+          });
+        });
+      });
 
       document.querySelectorAll('.dash-tab').forEach(function(tab) {
         tab.addEventListener('click', function() {
