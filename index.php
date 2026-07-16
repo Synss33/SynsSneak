@@ -48,9 +48,9 @@ if (isset($_POST['submit_preorder'])) {
     $q = "INSERT INTO preorders (product_name, customer_name, customer_email, customer_phone, notes)
           VALUES ('$pr_product','$pr_name','$pr_email','$pr_phone','$pr_notes')";
     if (mysqli_query($koneksi, $q)) {
-        $_SESSION['flash_order'] = 'Pre-order berhasil dikirim! Tim kami akan menghubungi Anda.';
+        $_SESSION['flash_preorder'] = 'Pre-order berhasil dikirim! Tim kami akan menghubungi Anda.';
     } else {
-        $_SESSION['flash_order'] = 'Gagal mengirim pre-order. Silakan coba lagi.';
+        $_SESSION['flash_preorder'] = 'Gagal mengirim pre-order. Silakan coba lagi.';
     }
     header("Location: index.php#products");
     exit;
@@ -151,7 +151,7 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
         <?php endif; ?>
       </ul>
       <div class="nav-actions">
-        <button class="nav-cta" onclick="openOrderModal()">Pre-Order</button>
+        <button class="nav-cta" onclick="openPreorderModal()">Pre-Order</button>
         <?php if (isset($_SESSION['login']) && $_SESSION['login'] === true) : ?>
         <a href="logout.php" class="nav-btn-auth" style="background:#0f172a;border-color:#0f172a;color:#fff;">Logout</a>
         <?php else : ?>
@@ -395,15 +395,15 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
       </section>
     </section>
 
-    <div class="modal-overlay admin-modal" id="orderModal">
+    <div class="modal-overlay admin-modal" id="preorderModal">
       <div class="modal-card">
-        <button class="modal-close" onclick="closeModal('orderModal')">&times;</button>
+        <button class="modal-close" onclick="closeModal('preorderModal')">&times;</button>
         <div class="modal-header">
           <h3>Pre-Order Sepatu</h3>
           <p>Isi data diri Anda untuk request pre-order produk yang diinginkan</p>
         </div>
-        <?php if (isset($_SESSION['flash_order'])) : ?>
-        <div class="flash-msg" style="margin-bottom:16px;"><?php echo $_SESSION['flash_order']; unset($_SESSION['flash_order']); ?></div>
+        <?php if (isset($_SESSION['flash_preorder'])) : ?>
+        <div class="flash-msg" style="margin-bottom:16px;"><?php echo $_SESSION['flash_preorder']; unset($_SESSION['flash_preorder']); ?></div>
         <?php endif; ?>
         <form action="index.php#products" method="POST" class="modal-form">
 
@@ -430,8 +430,64 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
             <textarea name="notes" rows="3" placeholder="Contoh: ukuran 42, warna hitam, dll."></textarea>
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn-dash btn-dash-pdf" onclick="closeModal('orderModal')">Batal</button>
+            <button type="button" class="btn-dash btn-dash-pdf" onclick="closeModal('preorderModal')">Batal</button>
             <button type="submit" name="submit_preorder" class="btn-dash btn-dash-add">Kirim Pre-Order</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay admin-modal" id="orderModal">
+      <div class="modal-card">
+        <button class="modal-close" onclick="closeModal('orderModal')">&times;</button>
+        <div class="modal-header">
+          <h3>Form Pemesanan</h3>
+          <p>Lengkapi data pemesanan untuk membeli produk ini</p>
+        </div>
+        <?php if (isset($_SESSION['flash_order'])) : ?>
+        <div class="flash-msg" style="margin-bottom:16px;"><?php echo $_SESSION['flash_order']; unset($_SESSION['flash_order']); ?></div>
+        <?php endif; ?>
+        <form action="index.php#products" method="POST" class="modal-form">
+          <div class="modal-field">
+            <label>Nama Produk *</label>
+            <input type="text" name="product_name" id="orderModalProduct" readonly required>
+          </div>
+          <div class="modal-row">
+            <div class="modal-field">
+              <label>Nama Lengkap *</label>
+              <input type="text" name="customer_name" required placeholder="Nama Anda">
+            </div>
+            <div class="modal-field">
+              <label>No. HP *</label>
+              <input type="text" name="customer_phone" required placeholder="08xxxx">
+            </div>
+          </div>
+          <div class="modal-field">
+            <label>Email *</label>
+            <input type="email" name="customer_email" required placeholder="nama@email.com">
+          </div>
+          <div class="modal-field">
+            <label>Alamat Lengkap *</label>
+            <textarea name="address" rows="3" required placeholder="Alamat pengiriman lengkap"></textarea>
+          </div>
+          <div class="modal-row">
+            <div class="modal-field">
+              <label>Ukuran *</label>
+              <input type="text" name="size" required placeholder="Contoh: 40, 41, 42">
+            </div>
+            <div class="modal-field">
+              <label>Jumlah *</label>
+              <input type="number" name="quantity" id="orderQuantity" value="1" min="1" required>
+            </div>
+          </div>
+          <div class="modal-field">
+            <label>Total Harga</label>
+            <strong id="orderTotalDisplay">Rp 0</strong>
+            <input type="hidden" name="total_price" id="orderTotalInput" value="0">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-dash btn-dash-pdf" onclick="closeModal('orderModal')">Batal</button>
+            <button type="submit" name="submit_order" class="btn-dash btn-dash-add">Kirim Pesanan</button>
           </div>
         </form>
       </div>
@@ -865,25 +921,48 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
         });
       }
 
-      var modal = document.getElementById('orderModal');
-      var modalProductDisplay = document.getElementById('modalProductDisplay');
+      var orderModal = document.getElementById('orderModal');
+      var orderProductDisplay = document.getElementById('orderModalProduct');
+      var orderQuantity = document.getElementById('orderQuantity');
+      var orderTotalDisplay = document.getElementById('orderTotalDisplay');
+      var orderTotalInput = document.getElementById('orderTotalInput');
+      var currentPrice = 0;
+
+      function updateOrderTotal() {
+        var qty = parseInt(orderQuantity.value) || 1;
+        var total = currentPrice * qty;
+        orderTotalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        orderTotalInput.value = total;
+      }
 
       document.querySelectorAll('.btn-beli').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var product = btn.getAttribute('data-product');
-          modalProductDisplay.value = product;
-          modal.classList.add('show');
+          currentPrice = parseInt(btn.getAttribute('data-price')) || 0;
+          orderProductDisplay.value = product;
+          orderQuantity.value = 1;
+          updateOrderTotal();
+          orderModal.classList.add('show');
         });
       });
 
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) modal.classList.remove('show');
+      orderQuantity.addEventListener('input', updateOrderTotal);
+
+      orderModal.addEventListener('click', function(e) {
+        if (e.target === orderModal) orderModal.classList.remove('show');
       });
 
-      window.openOrderModal = function() {
-        modalProductDisplay.value = '';
-        modal.classList.add('show');
+      var preorderModal = document.getElementById('preorderModal');
+      var preorderProductDisplay = document.getElementById('modalProductDisplay');
+
+      window.openPreorderModal = function() {
+        preorderProductDisplay.value = '';
+        preorderModal.classList.add('show');
       };
+
+      preorderModal.addEventListener('click', function(e) {
+        if (e.target === preorderModal) preorderModal.classList.remove('show');
+      });
 
       document.querySelectorAll('.status-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
