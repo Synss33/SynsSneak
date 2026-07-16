@@ -888,6 +888,8 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
           target.classList.add('active');
         }
 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         document.querySelectorAll('.nav-links a[href^="#"]').forEach(function(a) {
           a.classList.toggle('active', a.getAttribute('href') === hash);
         });
@@ -979,6 +981,9 @@ while ($row = mysqli_fetch_assoc($res)) $products[] = $row;
         form.addEventListener('submit', function(e) {
           e.preventDefault();
           var data = new FormData(form);
+          if (e.submitter && e.submitter.name) {
+            data.append(e.submitter.name, e.submitter.value || '');
+          }
           fetch('index.php', { method: 'POST', body: data }).then(function() {
             closeModal(form.closest('.modal-overlay').id);
             var action = form.getAttribute('action') || 'index.php';
